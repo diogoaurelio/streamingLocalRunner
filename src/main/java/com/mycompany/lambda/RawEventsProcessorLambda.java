@@ -41,20 +41,7 @@ public class RawEventsProcessorLambda implements RequestHandler<KinesisEvent, Vo
         System.out.println("Finished processing '" + count + "' kinesis raw record(s)");
         return null;
     }
-
-    private void processRecordWithRetries( List<Record> records )
-    {
-        for (Record record : records)
-        {
-            boolean processedSuccessfully = false;
-
-            for ( int i = 0; i < NUM_RETRIES; i++ )
-            {
-                processSingleRecord(record);
-            }
-
-        }
-    }
+    
 
     @Override
     public void processSingleRecord(Record record) {
