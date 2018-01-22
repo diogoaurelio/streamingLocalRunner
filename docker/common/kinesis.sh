@@ -59,7 +59,6 @@ function echoNewEvent(){
     USER_AGENT="retale Android(release;model/LGLS775;sdk/24;lang/en)"
 
     NO_PROFILE="false"
-    PAGE=$(shuf -i 1-10 -n 1)
 
     VISIT_ORIGIN_TYPE="MOBILEWEB_REQUEST_DBC_CAMPAIGN_ADWORDS_DESKTOP"
     CAMPAIGN_CHANNEL_TYPE="ADWORDS_MOBILE"

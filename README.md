@@ -71,20 +71,13 @@ psql> \q;
 
 Note that postgres docker has it's port mapped to your localhost port "15432", rather than "5432".
 
-We are ready to see all moving pieces together! Let us enable the synthetic Kinesis AWS Lambda consumer. In one terminal window enter and located at the root of this project:
-```
-source mediarithmics_lambda/bin/activate
-python src/lambdas/mediarithmics_ingest/local_app.py
-```
-
-In another terminal window - again still located at the root of this project - start generating events:
+We are almost ready to see all moving pieces together! In one terminal window - located at the root of this project - start generating events:
 ```
 cd docker/common
 bash generateRecordsKinesis.sh
 ```
 
-This will randomly generate records with distinct UUIDs, for 20 distinct user_ids. This should be your goto in order to customize the fake data generated.
-
+This will randomly generate records with distinct UUIDs, for 20 distinct user ids and 2 product ids. This should be your goto in order to customize the fake data generated.
 
 
 Last but not least, we can run locally our RawEventsProcessorLambda. [Kinesis docker does not support CBOR](https://github.com/mhart/kinesalite/blob/master/README.md#cbor-protocol-issues-with-the-java-sdk), thus you are required to change the way the Java Kinesis Client Library is consuming from Kinesis.
