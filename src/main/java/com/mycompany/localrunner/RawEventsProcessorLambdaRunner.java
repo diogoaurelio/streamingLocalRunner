@@ -12,6 +12,7 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcess
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
+import com.amazonaws.services.kinesis.metrics.impl.NullMetricsFactory;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
 import com.mycompany.consumer.KinesisConsumerProcessorManager;
 
@@ -34,7 +35,7 @@ public class RawEventsProcessorLambdaRunner {
     private static final String STREAM_NAME = "raw-events";
     private static final String APP_NAME = "KinesisRawEventsProcessor";
     private static final InitialPositionInStream INIT_POSITION_IN_STREAM =
-            InitialPositionInStream.LATEST;
+            InitialPositionInStream.TRIM_HORIZON;
 
     private static void init()
     {
@@ -43,7 +44,7 @@ public class RawEventsProcessorLambdaRunner {
             credentialsProvider = new ProfileCredentialsProvider(AWS_PROFILE);
 
             AWSCredentials keys = credentialsProvider.getCredentials();
-            System.out.println("Credentials: " + keys.getAWSAccessKeyId() + " and secret: " + keys.getAWSSecretKey());
+            System.out.println("Using local mock credentials aws key: '" + keys.getAWSAccessKeyId() + "' and secret: '" + keys.getAWSSecretKey() + "'");
 
         } catch (Exception e)
         {
@@ -106,7 +107,7 @@ public class RawEventsProcessorLambdaRunner {
         init();
         System.out.println("Initiallizing runners...");
 
-        String workerId = "someWorker";
+        String workerId = "mycompanyWorker";
         try {
             workerId = InetAddress.getLocalHost().getCanonicalHostName() + ":" + UUID.randomUUID();
         } catch (java.net.UnknownHostException e) {}
@@ -125,6 +126,7 @@ public class RawEventsProcessorLambdaRunner {
                 .kinesisClient(getKinesisClient())
                 .dynamoDBClient(getDynoClient())
                 .config(kinesisClientLibConfiguration)
+                .metricsFactory(new NullMetricsFactory()) // disable CloudWatch logging
                 .build();
 
         System.out.printf("Running '%s' to process stream '%s' as worker '%s'...\n",
@@ -141,6 +143,5 @@ public class RawEventsProcessorLambdaRunner {
             exitCode = 1;
         }
         System.exit(exitCode);
-
     }
 }

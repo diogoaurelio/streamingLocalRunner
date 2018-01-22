@@ -83,11 +83,11 @@ cd docker/common
 bash generateRecordsKinesis.sh
 ```
 
-This will randomly generate records with distinct UUIDs, for 20 distinct user_accounts. This should be your goto in order to customize the fake data generated.
+This will randomly generate records with distinct UUIDs, for 20 distinct user_ids. This should be your goto in order to customize the fake data generated.
 
 
 
-Last but not least, we can run locally our RawEventsProcessorLambda. Kinesis docker does not support CBOR, thus you are required to change the way the Java Kinesis Client Library is consuming from Kinesis.
+Last but not least, we can run locally our RawEventsProcessorLambda. [Kinesis docker does not support CBOR](https://github.com/mhart/kinesalite/blob/master/README.md#cbor-protocol-issues-with-the-java-sdk), thus you are required to change the way the Java Kinesis Client Library is consuming from Kinesis.
 Either in your IDE or in terminal set environment variable 'AWS_CBOR_DISABLE=true'. For example:
 
 ```

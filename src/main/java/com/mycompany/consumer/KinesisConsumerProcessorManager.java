@@ -20,7 +20,7 @@ import java.util.List;
 public class KinesisConsumerProcessorManager implements IRecordProcessorFactory
 {
 
-    private static String DEFAULT_REGION = "eu-central-1";
+    private LambdaFunc lambda;
     private String region;
     private AWSCredentialsProvider credentials;
     private ClientConfiguration config;
@@ -28,21 +28,28 @@ public class KinesisConsumerProcessorManager implements IRecordProcessorFactory
 
     public KinesisConsumerProcessorManager()
     {
-        this(DEFAULT_REGION);
+        this(LambdaFunc.RAW_EVENTS_PROCESSOR);
     }
 
-    public KinesisConsumerProcessorManager( String region )
+    public KinesisConsumerProcessorManager( final LambdaFunc lambda )
     {
-        this(region, null);
+        this(lambda, null);
     }
 
-    public KinesisConsumerProcessorManager( String region, AWSCredentialsProvider credentials )
+
+    public KinesisConsumerProcessorManager( final LambdaFunc lambda, final String region )
     {
-        this(region, credentials, null);
+        this(lambda, region, null);
     }
 
-    public KinesisConsumerProcessorManager( String region, AWSCredentialsProvider credentials, ClientConfiguration config )
+    public KinesisConsumerProcessorManager( final LambdaFunc lambda, final String region, final AWSCredentialsProvider credentials )
     {
+        this(lambda, region, credentials, null);
+    }
+
+    public KinesisConsumerProcessorManager( final LambdaFunc lambda, final String region, final AWSCredentialsProvider credentials, final ClientConfiguration config )
+    {
+        this.lambda = lambda;
         this.region = region;
         this.credentials = credentials;
         this.config = config;
@@ -90,7 +97,7 @@ public class KinesisConsumerProcessorManager implements IRecordProcessorFactory
     }
 
 
-    public List<Shard> getShards( String streamName )
+    public List<Shard> getShards( final String streamName )
     {
         DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
         describeStreamRequest.setStreamName( streamName );
@@ -109,7 +116,7 @@ public class KinesisConsumerProcessorManager implements IRecordProcessorFactory
         return shards;
     }
 
-    public void createStream( String streamName, int streamSize )
+    public void createStream( final String streamName, final int streamSize )
     {
         CreateStreamRequest createStreamRequest = new CreateStreamRequest();
         createStreamRequest.setStreamName(streamName);
@@ -151,6 +158,6 @@ public class KinesisConsumerProcessorManager implements IRecordProcessorFactory
 
     @Override
     public IRecordProcessor createProcessor() {
-        return new KinesisConsumerProcessor();
+        return new KinesisConsumerProcessor(lambda);
     }
 }

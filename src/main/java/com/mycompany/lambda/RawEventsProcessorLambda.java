@@ -35,11 +35,10 @@ public class RawEventsProcessorLambda implements RequestHandler<KinesisEvent, Vo
             count ++;
             System.out.println("Partition key is: " + record.getKinesis().getPartitionKey());
             System.out.println("Sequence number is: " + record.getKinesis().getSequenceNumber());
-            System.out.println("Data is: " + record.getKinesis().getData().array().toString());
             processSingleRecord(record.getKinesis());
 
         }
-        System.out.println("Finished processing '" + count + "' kinesis raw records");
+        System.out.println("Finished processing '" + count + "' kinesis raw record(s)");
         return null;
     }
 
@@ -65,14 +64,11 @@ public class RawEventsProcessorLambda implements RequestHandler<KinesisEvent, Vo
         try {
             // For this app, we interpret the payload as UTF-8 chars.
             data = decoder.decode(record.getData()).toString();
-            // Assume this record came from AmazonKinesisSample and log its age.
-            long recordCreateTime = new Long(data.substring("testData-".length()));
-            long ageOfRecordInMillis = System.currentTimeMillis() - recordCreateTime;
+            System.out.println("Record data is: " + data);
 
-            LOG.info(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data + ", Created "
-                    + ageOfRecordInMillis + " milliseconds ago.");
+            LOG.info(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data);
         } catch (NumberFormatException e) {
-            LOG.info("Record does not match sample record format. Ignoring record with data; " + data);
+            LOG.info("Record does not match sample record format. Ignoring record with data: " + data);
         } catch (CharacterCodingException e) {
             LOG.error("Malformed data: " + data, e);
         }
