@@ -95,7 +95,7 @@ function echoNewEvent(){
 function putRecord(){
     DEFAULT_TEST_DATA=$(echoNewEvent)
 
-    KINESIS_STREAM_NAME=${1:-mycompanyLocalTestStream}
+    KINESIS_STREAM_NAME=${1:-raw-events}
     DATA=${2:-$DEFAULT_TEST_DATA}
     RANDOM_SHARD=$(shuf -i 0-2 -n 1)
     KINESIS_SHARD_ID=${3:-"shardId-00000000000$RANDOM_SHARD"}

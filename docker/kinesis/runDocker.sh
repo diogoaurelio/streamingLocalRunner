@@ -53,6 +53,7 @@ bash stopDocker.sh --name=${DOCKER_NAME} --s=${SUDO} || echo "No docker containe
 echo "Starting $DOCKER_NAME container"
 ${SUDO} docker run -d --name ${DOCKER_NAME} \
     -p ${KINESIS_PORT}:4567 \
+    -e AWS_CBOR_DISABLE=true \
     --net=mycompany \
     vsouza/kinesis-local \
     --port ${KINESIS_PORT}

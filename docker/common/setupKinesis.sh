@@ -33,7 +33,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-KINESIS_STREAM_NAME=${stream_name:-mycompanyLocalTestStream}
+KINESIS_STREAM_NAME=${stream_name:-raw-events}
 KINESIS_SHARD_COUNT=${num_shards:-3}
 KINESIS_PORT=${kport:-4567}
 AWS_REGION=${aws_region:-eu-central-1}

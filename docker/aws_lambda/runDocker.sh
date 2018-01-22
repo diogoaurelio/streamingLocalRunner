@@ -34,12 +34,6 @@ while [ $# -gt 0 ]; do
     --build=*)
       build="${1#*=}"
       ;;
-    --mr_api=*)
-      mr_api="${1#*=}"
-      ;;
-    --mr_token=*)
-      mr_token="${1#*=}"
-      ;;
     *)
       printf "***************************\n"
       printf "* Error: Invalid argument.*\n"
@@ -50,14 +44,12 @@ while [ $# -gt 0 ]; do
 done
 
 SUDO=$s
-DOCKER_NAME=${name:-mycompany_cron_lambda}
+DOCKER_NAME=${name:-mycompany_lambda}
 
 DOCKER_DIR=$(dirname "${PWD}")
 ROOT_DIR=$(dirname "${DOCKER_DIR}")
 BUILD=${build:-true}
-IMAGE_NAME="mediarithmics-lambda"
-MR_API=${mr_api:-http://mediarithmics_mock_api:5000}
-MR_TOKEN=${mr_token}
+IMAGE_NAME="kinesis-java8-lambda"
 
 if [ $BUILD == "true" ]; then
     echo "Build is set to true. Building docker container"
@@ -76,6 +68,6 @@ ${SUDO} docker run -d -t --name ${DOCKER_NAME} \
     --net=mycompany \
     -e DATABASE_HOST=mycompany_postgres \
     -e DATABASE_PORT=5432 \
-    -e MR_HOST=${MR_API} \
-    -e MR_TOKEN=${MR_TOKEN} \
+    -e DYNAMODB_ENDPOINT=http://mycompany_dynamo:8000 \
+    -e AWS_CBOR_DISABLE=true \
     ${IMAGE_NAME}:latest

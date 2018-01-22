@@ -1,6 +1,7 @@
 package com.mycompany.localrunner;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -28,10 +29,11 @@ public class RawEventsProcessorLambdaRunner {
 
     // this is a local profile that uses mock credentials to interact
     // with local AWS docker containers
-    private static final String AWS_PROFILE = "my-mock-profile";
+    private static final String AWS_PROFILE = "mycompany_local_aws_testing";
     private static final String AWS_REGION = "eu-central-1";
+    private static final String STREAM_NAME = "raw-events";
     private static final String APP_NAME = "KinesisRawEventsProcessor";
-    private static final InitialPositionInStream SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM =
+    private static final InitialPositionInStream INIT_POSITION_IN_STREAM =
             InitialPositionInStream.LATEST;
 
     private static void init()
@@ -39,6 +41,9 @@ public class RawEventsProcessorLambdaRunner {
         try
         {
             credentialsProvider = new ProfileCredentialsProvider(AWS_PROFILE);
+
+            AWSCredentials keys = credentialsProvider.getCredentials();
+            System.out.println("Credentials: " + keys.getAWSAccessKeyId() + " and secret: " + keys.getAWSSecretKey());
 
         } catch (Exception e)
         {
@@ -53,35 +58,45 @@ public class RawEventsProcessorLambdaRunner {
 
     }
 
-    private static void deleteResources() {
-        // Delete the stream
+    private static AmazonKinesis getKinesisClient()
+    {
         AmazonKinesis kinesis = AmazonKinesisClientBuilder.standard()
                 .withCredentials(credentialsProvider)
-                .withRegion(AWS_REGION)
                 .withEndpointConfiguration(kinesisEndpointConfig)
                 .build();
+        return kinesis;
+    }
+
+    private static AmazonDynamoDB getDynoClient()
+    {
+        AmazonDynamoDB dynamoDB = AmazonDynamoDBClientBuilder.standard()
+                .withCredentials(credentialsProvider)
+                .withEndpointConfiguration(dynamoDbEndpointConfig)
+                .build();
+        return dynamoDB;
+    }
+
+    private static void deleteResources() {
+        // Delete the stream
+        AmazonKinesis kinesis = getKinesisClient();
 
         System.out.printf("Deleting the Amazon Kinesis stream used by the sample. Stream Name = %s.\n",
-                APP_NAME);
+                STREAM_NAME);
         try {
-            kinesis.deleteStream(APP_NAME);
+            kinesis.deleteStream(STREAM_NAME);
         } catch (ResourceNotFoundException ex) {
             // The stream doesn't exist.
         }
 
         // Delete the table
-        AmazonDynamoDB dynamoDB = AmazonDynamoDBClientBuilder.standard()
-                .withCredentials(credentialsProvider)
-                .withRegion(AWS_REGION)
-                .withEndpointConfiguration(dynamoDbEndpointConfig)
-                .build();
+        AmazonDynamoDB dynamoDB = getDynoClient();
         System.out.printf("Deleting the Amazon DynamoDB table used by the Amazon Kinesis Client Library. Table Name = %s.\n",
-                APP_NAME);
+                STREAM_NAME);
         try {
-            dynamoDB.deleteTable(APP_NAME);
+            dynamoDB.deleteTable(STREAM_NAME);
         } catch (com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException ex) {
             // The table doesn't exist.
-            System.out.println("DynamoDB Table " + APP_NAME + " does not seem to exist");
+            System.out.println("DynamoDB Table " + STREAM_NAME + " does not seem to exist");
         }
     }
 
@@ -98,20 +113,23 @@ public class RawEventsProcessorLambdaRunner {
 
         final KinesisClientLibConfiguration kinesisClientLibConfiguration =
                 new KinesisClientLibConfiguration(APP_NAME,
-                        APP_NAME,
+                        STREAM_NAME,
                         credentialsProvider,
                         workerId);
-        kinesisClientLibConfiguration.withInitialPositionInStream(SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM);
+        kinesisClientLibConfiguration.withInitialPositionInStream(INIT_POSITION_IN_STREAM);
+
 
         final IRecordProcessorFactory recordProcessorFactory = new KinesisConsumerProcessorManager();
         final Worker worker = new Worker.Builder()
                 .recordProcessorFactory(recordProcessorFactory)
+                .kinesisClient(getKinesisClient())
+                .dynamoDBClient(getDynoClient())
                 .config(kinesisClientLibConfiguration)
                 .build();
 
-        System.out.printf("Running %s to process stream %s as worker %s...\n",
+        System.out.printf("Running '%s' to process stream '%s' as worker '%s'...\n",
                 APP_NAME,
-                APP_NAME,
+                STREAM_NAME,
                 workerId);
 
         int exitCode = 0;

@@ -34,7 +34,6 @@ KINESIS_DIR=$DOCKER_DIR/kinesis
 POSTGRES_DIR=$DOCKER_DIR/postgres
 S3_DIR=$DOCKER_DIR/s3
 DYNO_DIR=$DOCKER_DIR/dynamodb
-MR_DIR=$DOCKER_DIR/mediarithmics-api
 COMMON_DIR=$DOCKER_DIR/common
 
 
@@ -66,13 +65,6 @@ function runDynoDocker(){
     printf "\n##### Finished launching S3 Docker. #####\n"
 }
 
-function runMediarithmicsDocker(){
-    printf "\n\n##### Launching Mediarithmics Mock API Docker.. #####\n"
-    cd $MR_DIR
-    bash runDocker.sh --s=${SUDO}
-    printf "\n##### Finished launching S3 Docker. #####\n"
-}
-
 function setupAwsProfile(){
 
     AWS_MOCK_KEY="MY_ACCESS_KEY"
@@ -96,7 +88,7 @@ function setupAwsProfile(){
 }
 
 function initKinesis(){
-    KINESIS_STREAM_NAME=${1:-mycompanyLocalTestStream}
+    KINESIS_STREAM_NAME=${1:-raw-events}
     KINESIS_SHARD_COUNT=${2:-3}
     KINESIS_PORT=${3:-4567}
     AWS_REGION=${4:-eu-central-1}
@@ -133,7 +125,6 @@ runPostgresDocker
 # S3 mock not required for the moment
 #runS3Docker
 runDynoDocker
-runMediarithmicsDocker
 setupAwsProfile
 initKinesis
 bye

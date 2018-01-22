@@ -55,7 +55,7 @@ done
 SUDO=$s
 DOCKER_NAME=${name:-mycompany_postgres}
 PG_PORT=${port:-15432}
-PG_DB=${pg_db:-realtimebilling}
+PG_DB=${pg_db:-streamingdb}
 PG_USER=${pg_user:-postgres}
 PG_PWD=${pg_pwd:-mysecretpassword}
 
@@ -73,7 +73,7 @@ $SUDO docker run -d --name $DOCKER_NAME \
     -e POSTGRES_USER=$PG_USER \
     -e POSTGRES_DB=$PG_DB \
     -e POSTGRES_PASSWORD=$PG_PWD \
-    -v ${ROOT_DIR}/tests/resources/:/docker-entrypoint-initdb.d/ \
+    -v ${ROOT_DIR}/src/main/resources/sql/:/docker-entrypoint-initdb.d/ \
     --net=mycompany \
     postgres:9.6
 
